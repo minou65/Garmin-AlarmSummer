@@ -416,3 +416,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+Garmin-AlarmSummer.vcxproj
+Garmin-AlarmSummer.vcxproj.filters
+.vscode/settings.json
+__vm/.Garmin-AlarmSummer.vsarduino.h
+__vm/Compile.vmps.xml
+__vm/Configuration.Debug.vmps.xml
