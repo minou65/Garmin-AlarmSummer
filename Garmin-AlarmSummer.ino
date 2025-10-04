@@ -39,10 +39,14 @@ const int PIN_PIEZO_BUZZER = 5;    // Ausgang: PiezoBuzzer
 Neotimer secondTimer(1000); // 1 Sekunde
 Neotimer alertDebouncer(50);
 Neotimer buttonDebouncer(50);
+Neotimer testAlarmTimer(6000); // 5 Sekunden Testalarm
 
 bool acknowledged = false; // Quittierungs-Status global
+bool testAlarmActive = true;
 
 void setup() {
+	Serial.begin(115200);
+	Serial.println("Garmin-AlarmSummer starting...");
     pinMode(PIN_GARMIN_ALERT, INPUT_PULLUP);
     pinMode(PIN_INPUT_BUTTON, INPUT_PULLUP);
 	pinMode(PIN_LED_BUTTON, OUTPUT);
@@ -50,9 +54,31 @@ void setup() {
 
 	digitalWrite(PIN_LED_BUTTON, LOW);
 	digitalWrite(PIN_PIEZO_BUZZER, LOW);
+
+    testAlarmTimer.start(); // Testalarm starten
+
+	Serial.println("Setup complete.");
 }
 
 void loop() {
+    // Testalarm aktiv?
+    if (testAlarmActive) {
+        // Testalarm für 5 Sekunden
+        if (secondTimer.repeat()) {
+            digitalWrite(PIN_LED_BUTTON, !digitalRead(PIN_LED_BUTTON));
+            digitalWrite(PIN_PIEZO_BUZZER, !digitalRead(PIN_PIEZO_BUZZER));
+            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+        }
+        if (testAlarmTimer.done()) {
+            // Testalarm beenden
+            testAlarmActive = false;
+            digitalWrite(PIN_LED_BUTTON, LOW);
+            digitalWrite(PIN_PIEZO_BUZZER, LOW);
+            digitalWrite(LED_BUILTIN, LOW);
+            secondTimer.restart();
+        }
+        return; // Normale Logik überspringen
+    }
 
     alertDebouncer.debounce((digitalRead(PIN_GARMIN_ALERT) == LOW));
     buttonDebouncer.debounce((digitalRead(PIN_INPUT_BUTTON) == LOW));
@@ -65,19 +91,26 @@ void loop() {
 
         if (acknowledged) {
             // Summer aus, LED dauerhaft an
-            digitalWrite(PIN_PIEZO_BUZZER, LOW);
             digitalWrite(PIN_LED_BUTTON, HIGH);
+            
+            digitalWrite(LED_BUILTIN, LOW);
+            digitalWrite(PIN_PIEZO_BUZZER, LOW);
+
         } else {
             // Summer im Sekundentakt, LED blinkt im Sekundentakt
             if (secondTimer.repeat()) {
                 digitalWrite(PIN_LED_BUTTON, !digitalRead(PIN_LED_BUTTON));
+
+                digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
                 digitalWrite(PIN_PIEZO_BUZZER, !digitalRead(PIN_PIEZO_BUZZER));
             }
         }
     } else {
         // Alles zurücksetzen
         digitalWrite(PIN_LED_BUTTON, LOW);
-        digitalWrite(PIN_PIEZO_BUZZER, LOW);
+
+        digitalWrite(PIN_PIEZO_BUZZER, LOW); 
+        digitalWrite(LED_BUILTIN, LOW);
         secondTimer.restart();
         acknowledged = false;
     }

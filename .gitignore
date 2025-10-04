@@ -422,3 +422,4 @@ Garmin-AlarmSummer.vcxproj.filters
 __vm/.Garmin-AlarmSummer.vsarduino.h
 __vm/Compile.vmps.xml
 __vm/Configuration.Debug.vmps.xml
+/__vm/Upload.vmps.xml
